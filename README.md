@@ -6,15 +6,23 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 - C++17
 - CMake
 
-# Benchmark history:
-### Version 1
-<img width="824" height="259" alt="benchmark1" src="https://github.com/user-attachments/assets/a0bf862d-1154-477f-acf2-3b4300b0ec53" />
-- Parameters: circleAmount = 5000, radius = 5.f, speed = 300.f
-- 35 FPS
-- Notes: checkCollisions is expensive, but getPosition is the bigger red flag. 21% of CPU cycles for a simple getter.
-### Version 2
-<img width="560" height="281" alt="image" src="https://github.com/user-attachments/assets/30f6b985-20f4-438c-afa1-60e759d3d50d" />
-- Parameters: circleAmount = 5000, radius = 5.f, speed = 300.f
-- 98fps
-- Notes: Replaced SFML Vector2f:s with posX, posY, dirX, dirY and removed usage of getPosition(). Then updated the math accordingly. As a result the program is much more cache friendly.
-- Next steps: Now the balls check EVERY other ball, and that could be improved by splitting the window into a grid. A ball inside a certain grid should check collisions only with balls inside the same grid. 
+## Benchmark History
+
+### Version 1: Brute-Force & Object-Oriented
+
+![Benchmark 1 CPU Hotspots](https://github.com/user-attachments/assets/a0bf862d-1154-477f-acf2-3b4300b0ec53)
+
+* **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
+* **Performance:** 35 FPS 
+* **Notes:** While `checkCollisions()` is heavy, `getPosition()` turned out to be a massive hidden bottleneck, consuming over 21% of CPU cycles due to object-oriented getter overhead and cache misses.
+
+---
+
+### Version 2: Data-Oriented Design (Struct of Arrays)
+
+![Benchmark 2 CPU Hotspots](https://github.com/user-attachments/assets/30f6b985-20f4-438c-afa1-60e759d3d50d)
+
+* **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
+* **Performance:** 98 FPS
+* **Notes:** Replaced SFML `Vector2f` objects with flat, contiguous memory arrays (`posX`, `posY`, `dirX`, `dirY`) and completely removed the usage of `getPosition()`. The program is now cache-friendly.
+* **Next Steps:** Every circle currently checks every other circle ($O(N^2)$). This will be optimized next by implementing a **Spatial Grid (Broad Phase)** so circles only check collisions against neighbors inside their local grid cell.
