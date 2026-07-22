@@ -8,9 +8,9 @@
 
 class CircleEngine {
 public:
-    int circleAmount{1000};
+    int circleAmount{5000};
     float radius{5.f};
-    float speed{100.f};
+    float speed{300.f};
     sf::Color color{sf::Color::White};
     std::vector<sf::CircleShape> circles;
     std::vector<sf::Vector2i> coordinates;
