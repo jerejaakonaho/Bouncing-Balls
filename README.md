@@ -14,7 +14,7 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 
 * **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
 * **Performance:** 35 FPS 
-* **Notes:** While `checkCollisions()` is heavy, `getPosition()` turned out to be a massive hidden bottleneck, consuming over 21% of CPU cycles due to object-oriented getter overhead and cache misses.
+* **Notes:** While `checkCollisions()` is heavy, `getPosition()` turned out to be a massive bottleneck, consuming over 21% of CPU cycles due to object-oriented getter overhead and cache misses.
 
 ---
 
@@ -24,5 +24,5 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 
 * **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
 * **Performance:** 98 FPS
-* **Notes:** Replaced SFML `Vector2f` objects with flat, contiguous memory arrays (`posX`, `posY`, `dirX`, `dirY`) and completely removed the usage of `getPosition()`. The program is now cache-friendly.
-* **Next Steps:** Every circle currently checks every other circle ($O(N^2)$). This will be optimized next by implementing a **Spatial Grid (Broad Phase)** so circles only check collisions against neighbors inside their local grid cell.
+* **Notes:** Replaced SFML `Vector2f` objects with std::vectors (`posX`, `posY`, `dirX`, `dirY`) and completely removed the usage of `getPosition()`. The program is now cache-friendly.
+* **Next Steps:** Every circle currently checks every other circle ($O(N^2)$). This will be optimized next by implementing a Spatial Grid so circles only check collisions against neighbors inside their local grid cell.
