@@ -13,30 +13,37 @@ public:
     float speed{300.f};
     sf::Color color{sf::Color::White};
     std::vector<sf::CircleShape> circles;
-    std::vector<sf::Vector2i> coordinates;
-    std::vector<sf::Vector2f> directions;
+    std::vector<float> posX;
+    std::vector<float> posY;
+    std::vector<float> dirX;
+    std::vector<float> dirY;
 
     void moveCircles(float dt) {
-        for (size_t i{}; i < circles.size(); i++) {
-            circles[i].move(directions[i] * dt);
+        for (size_t i{}; i < circleAmount; i++) {
+            posX[i] += dirX[i] * dt;
+            posY[i] += dirY[i] * dt;
         }
     }
 
     void checkCollisions() {
-        for (size_t i{}; i < circles.size(); i++) {
-            for (size_t j{i + 1}; j < circles.size(); j++) {
-                sf::Vector2f pos1 = circles[i].getPosition();
-                sf::Vector2f pos2 = circles[j].getPosition();
+        // Used in the loop, moved here to prevent calculating every loop.
+        float radiusSum = radius + radius;
+        float radiusSumSquared = radiusSum * radiusSum;
+
+        for (size_t i{}; i < circleAmount; i++) {
+            for (size_t j{i + 1}; j < circleAmount; j++) {
+                float pos1_x = posX[i];
+                float pos1_y = posY[i];
+
+                float pos2_x = posX[j];
+                float pos2_y = posY[j];
+
 
                 // Distance squared, calculating distance is slower due to square root operation
-                float dx = pos2.x - pos1.x;
-                float dy = pos2.y - pos1.y;
+                float dx = pos2_x - pos1_x;
+                float dy = pos2_y - pos1_y;
 
                 float dSquared = (dx * dx) + (dy * dy);
-
-                // Now compare distance squared to sum of the radiuses squared (of the circles)
-                float radiusSum = radius + radius;
-                float radiusSumSquared = radiusSum * radiusSum;
 
                 if (dSquared < radiusSumSquared) {
                     // Collided, change direction
@@ -48,65 +55,57 @@ public:
 
                     // Circles might overlap so shift them to prevent sticking
                     float overlap = radiusSum - distance;
-                    circles[i].move({-nx * (overlap * 0.5f), -ny * (overlap * 0.5f)});
-                    circles[j].move({nx * (overlap * 0.5f), ny * (overlap * 0.5f)});
+                    posX[i] += -nx * (overlap * 0.5f);
+                    posY[i] += -ny * (overlap * 0.5f);
+                    posX[j] += nx * (overlap * 0.5f);
+                    posY[j] += ny * (overlap * 0.5f);
 
                     // Dot products
-                    float dot_i = (directions[i].x * nx) + (directions[i].y * ny);
-                    float dot_j = (directions[j].x * nx) + (directions[j].y * ny);
+                    float dot_i = (dirX[i] * nx) + (dirY[i] * ny);
+                    float dot_j = (dirX[j] * nx) + (dirY[j] * ny);
 
                     // Mirror the direction: 2 * dot product * normal vector
-                    directions[i].x -= 2.f * dot_i * nx;
-                    directions[i].y -= 2.f * dot_i * ny;
+                    dirX[i] -= 2.f * dot_i * nx;
+                    dirY[i] -= 2.f * dot_i * ny;
 
-                    directions[j].x -= 2.f * dot_j * nx;
-                    directions[j].y -= 2.f * dot_j * ny;
+                    dirX[j] -= 2.f * dot_j * nx;
+                    dirY[j] -= 2.f * dot_j * ny;
                 }
             }
         }
     }
 
     void checkWallCollisions(uint windowHeight, uint windowWidth) {
-        for (size_t i{}; i < circles.size(); i++) {
-             sf::Vector2f pos = circles[i].getPosition();
-             bool positionChanged = false;
-
-
+        for (size_t i{}; i < circleAmount; i++) {
              // X axis, if out of bounds return to bounds and reverse direction.
-             if (pos.x - radius < 0.f) {
-                 pos.x = radius;
-                 directions[i].x *= -1.f;
-                 positionChanged = true;
-             } else if (pos.x + radius > windowWidth) {
-                 pos.x = windowWidth - radius;
-                 directions[i].x *= -1.f;
-                 positionChanged = true;
+             if (posX[i] - radius < 0.f) {
+                 posX[i] = radius;
+                 dirX[i] *= -1.f;
+             } else if (posX[i] + radius > windowWidth) {
+                 posX[i] = windowWidth - radius;
+                 dirX[i] *= -1.f;
              }
 
              // Y axis:
-             if (pos.y - radius < 0.f) {
-                 pos.y = radius;
-                 directions[i].y *= -1.f;
-                 positionChanged = true;
-             } else if (pos.y + radius > windowHeight) {
-                 pos.y = windowHeight - radius;
-                 directions[i].y *= -1.f;
-                 positionChanged = true;
+             if (posY[i] - radius < 0.f) {
+                 posY[i] = radius;
+                 dirY[i] *= -1.f;
+             } else if (posY[i] + radius > windowHeight) {
+                 posY[i] = windowHeight - radius;
+                 dirY[i] *= -1.f;
              }
-
-             // If ball hit wall update new position
-             if (positionChanged) circles[i].setPosition(pos);
         }
     }
 
     void initializeCircles(uint windowHeight, uint windowWidth) {
         circles.resize(circleAmount);
-        coordinates.resize(circleAmount);
-        directions.resize(circleAmount);
-
+        posX.resize(circleAmount);
+        posY.resize(circleAmount);
+        dirX.resize(circleAmount);
+        dirY.resize(circleAmount);
 
         // Used for deterministic randomness. Makes benchmarks consistent across runs.
-        std::mt19937 gen(67);
+        std::mt19937 gen(67);s
 
         std::uniform_real_distribution<float> xDist(radius, windowWidth - radius);
         std::uniform_real_distribution<float> yDist(radius, windowHeight - radius);
@@ -116,16 +115,24 @@ public:
         for (size_t i{}; i < circles.size(); i++) {
             circles[i].setRadius(radius);
             circles[i].setFillColor(color);
+            circles[i].setOrigin({radius, radius});
 
             float startX = xDist(gen);
             float startY = yDist(gen);
-            circles[i].setPosition({startX, startY});
-            circles[i].setOrigin({radius, radius});
+
+            posX[i] = startX;
+            posY[i] = startY;
 
             sf::Angle angle = sf::degrees(angleDist(gen));
 
-            directions[i].x = std::cos(angle.asRadians()) * speed;
-            directions[i].y = std::sin(angle.asRadians()) * speed;
+            dirX[i] = std::cos(angle.asRadians()) * speed;
+            dirY[i] = std::sin(angle.asRadians()) * speed;
+        }
+    }
+
+    void syncGraphics() {
+        for (size_t i{}; i < circleAmount; i++) {
+            circles[i].setPosition({posX[i], posY[i]});
         }
     }
 
@@ -133,5 +140,6 @@ public:
         moveCircles(dt);
         checkWallCollisions(windowHeight, windowWidth);
         checkCollisions();
+        syncGraphics();
     }
 };

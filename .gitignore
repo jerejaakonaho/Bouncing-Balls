@@ -4,5 +4,5 @@ out
 .idea
 .vs
 .vscode
-perf.data
+perf.data*
 .github
