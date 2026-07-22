@@ -8,5 +8,6 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 
 # Benchmark history:
 ### First working version
+
 - Parameters: circleAmount = 5000, radius = 5.f, speed = 300.f
-- 6 FPS
+- 35 FPS
