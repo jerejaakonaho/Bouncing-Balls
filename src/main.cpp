@@ -1,11 +1,11 @@
 #include <SFML/Graphics.hpp>
-#include "Circle.hpp"
+#include "ParticleEngine.hpp"
 
 int main() {
     uint windowHeight{1000};
     uint windowWidth{1000};
-    CircleEngine CircleEngine;
-    CircleEngine.initializeCircles(windowHeight, windowWidth);
+    ParticleEngine ParticleEngine;
+    ParticleEngine.initializeCircles(windowHeight, windowWidth);
 
 	sf::RenderWindow window( sf::VideoMode( { windowHeight, windowWidth } ), "Bouncing Balls" );
 	window.setFramerateLimit(1000);
@@ -25,10 +25,10 @@ int main() {
 				window.close();
 		}
 
-		CircleEngine.CircleLoop(windowHeight, windowWidth, dt);
+		ParticleEngine.CircleLoop(windowHeight, windowWidth, dt);
 
 		window.clear();
-		for (const auto& circle : CircleEngine.circles) {
+		for (const auto& circle : ParticleEngine.circles) {
 		    window.draw(circle);
 		}
 
