@@ -8,7 +8,7 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 
 ## Benchmark History
 
-### Version 1: Brute-Force & Object-Oriented
+### Version 1: Brute-Force & Object-Oriented, objective was to make it work
 
 ![Benchmark 1 CPU Hotspots](https://github.com/user-attachments/assets/a0bf862d-1154-477f-acf2-3b4300b0ec53)
 
@@ -31,5 +31,5 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 ![Benchmark 3 CPU Hotspots](https://github.com/user-attachments/assets/5c13d735-e236-4b81-92e7-2f4d0d199dfb)
 * **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
 * **Performance:** 880 FPS
-* **Notes** Implemented spatial grid based collision checking -> Particles are grouped into cells, only checking collisions inside their own cells and neighboring cells. Used a contiguous linked list as the data structure to keep the program cache friendly and prevent memory fragmentation.
+* **Notes** Implemented spatial grid based collision checking -> Particles are grouped into cells, only checking collisions inside their own cells and neighboring cells. Used a contiguous linked list as the data structure to keep the program cache friendly and prevent memory fragmentation. Now the bottleneck is the GPU driver
 * **Next Steps** Maybe sending a vertex array to pack the draw instructions instead of sending each one separately.
