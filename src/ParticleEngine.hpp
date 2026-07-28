@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/VertexBuffer.hpp>
 #include <SFML/System/Angle.hpp>
 #include <vector>
 #include <algorithm>
@@ -9,13 +11,23 @@
 class ParticleEngine {
 public:
     // Performance affecting parameters
-    int circleAmount{5000};
-    float radius{5.f};
-    float speed{300.f};
+    const int circleAmount{5000};
+    const int vertexAmount{circleAmount * 6};
+    const float radius{5.f};
+    const float speed{300.f};
 
-    // Contain the
     sf::Color color{sf::Color::White};
-    std::vector<sf::CircleShape> circles;
+
+    // GPU Vectors
+    std::vector<sf::Vertex> vertices;
+    sf::VertexBuffer vertexBuffer{sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Stream};
+
+    // Circle texture as a .png
+    std::string circlePNG{"../assets/circle.png"};
+
+    bool initTexture(const std::string &fileName, sf::Texture &circleTexture) {
+        return circleTexture.loadFromFile(fileName);
+    }
 
     std::vector<float> posX;
     std::vector<float> posY;
@@ -29,7 +41,7 @@ public:
     int rows{};
     float cellSize{};
 
-    __attribute__((always_inline)) inline int getCellIndex(float x, float y) const {
+    inline int getCellIndex(float x, float y) const {
         int column = static_cast<int>(x / cellSize);
         int row = static_cast<int>(y / cellSize);
 
@@ -60,58 +72,7 @@ public:
         }
     }
 
-    // OLD O(N²) loop
-    void checkCollisions() {
-        // Used in the loop, moved here to prevent calculating every loop.
-        float radiusSum = radius + radius;
-        float radiusSumSquared = radiusSum * radiusSum;
-
-        for (size_t i{}; i < circleAmount; i++) {
-            for (size_t j{i + 1}; j < circleAmount; j++) {
-                float pos1_x = posX[i];
-                float pos1_y = posY[i];
-
-                float pos2_x = posX[j];
-                float pos2_y = posY[j];
-
-
-                // Distance squared, calculating distance is slower due to square root operation
-                float dx = pos2_x - pos1_x;
-                float dy = pos2_y - pos1_y;
-
-                float dSquared = (dx * dx) + (dy * dy);
-
-                if (dSquared < radiusSumSquared) {
-                    // Collided, change direction
-
-                    // Real distance and normal vectors
-                    float distance = std::sqrt(dSquared);
-                    float nx = dx / distance;
-                    float ny = dy / distance;
-
-                    // Circles might overlap so shift them to prevent sticking
-                    float overlap = radiusSum - distance;
-                    posX[i] += -nx * (overlap * 0.5f);
-                    posY[i] += -ny * (overlap * 0.5f);
-                    posX[j] += nx * (overlap * 0.5f);
-                    posY[j] += ny * (overlap * 0.5f);
-
-                    // Dot products
-                    float dot_i = (dirX[i] * nx) + (dirY[i] * ny);
-                    float dot_j = (dirX[j] * nx) + (dirY[j] * ny);
-
-                    // Mirror the direction: 2 * dot product * normal vector
-                    dirX[i] -= 2.f * dot_i * nx;
-                    dirY[i] -= 2.f * dot_i * ny;
-
-                    dirX[j] -= 2.f * dot_j * nx;
-                    dirY[j] -= 2.f * dot_j * ny;
-                }
-            }
-        }
-    }
-
-    __attribute__((always_inline)) inline void handleCollision(int i, int j, float radiusSum, float radiusSumSquared) {
+    inline void handleCollision(int i, int j, float radiusSum, float radiusSumSquared) {
         float dx = posX[j] - posX[i];
         float dy = posY[j] - posY[i];
         float dSquared = (dx * dx) + (dy * dy);
@@ -207,20 +168,29 @@ public:
         }
     }
 
-    void initializeCircles(uint windowHeight, uint windowWidth) {
-        circles.resize(circleAmount);
+    void initializeCircles(uint windowHeight, uint windowWidth, const sf::Texture& texture) {
         posX.resize(circleAmount);
         posY.resize(circleAmount);
         dirX.resize(circleAmount);
         dirY.resize(circleAmount);
 
+        vertices.resize(vertexAmount);
+        vertexBuffer.create(vertexAmount); // Allocate GPU memory
+
+
         // Grid variables:
         cellSize = radius * 2.0f;
         columns = static_cast<int>(std::ceil(windowWidth / cellSize));
         rows = static_cast<int>(std::ceil(windowHeight / cellSize));
-
         gridHeads.resize(columns * rows, -1);
         nextParticle.resize(circleAmount, -1);
+
+        // Texture corners
+        sf::Vector2f texSize(texture.getSize());
+        sf::Vector2f topLeft(0.f, 0.f);
+        sf::Vector2f topRight(texSize.x, 0.f);
+        sf::Vector2f bottomRight(texSize.x, texSize.y);
+        sf::Vector2f bottomLeft(0.f, texSize.y);
 
         // Used for deterministic randomness. Makes benchmarks consistent across runs.
         std::mt19937 gen(67);
@@ -230,10 +200,12 @@ public:
 
         std::uniform_real_distribution<float> angleDist(0.f, 360.f);
 
-        for (size_t i{}; i < circles.size(); i++) {
-            circles[i].setRadius(radius);
-            circles[i].setFillColor(color);
-            circles[i].setOrigin({radius, radius});
+        for (size_t i{}; i < circleAmount; i++) {
+            posX[i] = xDist(gen);
+            posY[i] = yDist(gen);
+            sf::Angle angle = sf::degrees(angleDist(gen));
+            dirX[i] = std::cos(angle.asRadians()) * speed;
+            dirY[i] = std::sin(angle.asRadians()) * speed;
 
             float startX = xDist(gen);
             float startY = yDist(gen);
@@ -241,18 +213,44 @@ public:
             posX[i] = startX;
             posY[i] = startY;
 
-            sf::Angle angle = sf::degrees(angleDist(gen));
+            // Map texture coordinates:
+            size_t v = i * 6;
 
-            dirX[i] = std::cos(angle.asRadians()) * speed;
-            dirY[i] = std::sin(angle.asRadians()) * speed;
+            // Triangle 1:
+            vertices[v + 0].texCoords = topLeft;
+            vertices[v + 1].texCoords = topRight;
+            vertices[v + 2].texCoords = bottomRight;
+
+            // Triangle 2:
+            vertices[v + 3].texCoords = bottomRight;
+            vertices[v + 4].texCoords = bottomLeft;
+            vertices[v + 5].texCoords = topLeft;
+
+            for (size_t j{0}; j < 6; ++j) {
+                vertices[v + j].color = color;
+            }
         }
     }
 
     void syncGraphics() {
         for (size_t i{}; i < circleAmount; i++) {
-            circles[i].setPosition({posX[i], posY[i]});
+            size_t v = i * 6;
+            float left = posX[i] - radius;
+            float right = posX[i] + radius;
+            float top = posY[i] - radius;
+            float bottom = posY[i] + radius;
+
+            vertices[v + 0].position = {left, top};
+            vertices[v + 1].position = {right, top};
+            vertices[v + 2].position = {right, bottom};
+            vertices[v + 3].position = {right, bottom};
+            vertices[v + 4].position = {left, bottom};
+            vertices[v + 5].position = {left, top};
         }
+        (void)vertexBuffer.update(vertices.data()); // (void) to tell the coimpiler we are intentionally ignoring the return bool
     }
+
+
 
     void CircleLoop(uint windowHeight, uint windowWidth, float dt) {
         moveCircles(dt);
