@@ -32,4 +32,12 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 * **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
 * **Performance:** 880 FPS
 * **Notes** Implemented spatial grid based collision checking -> Particles are grouped into cells, only checking collisions inside their own cells and neighboring cells. Used a contiguous linked list as the data structure to keep the program cache friendly and prevent memory fragmentation. Now the bottleneck is the GPU driver
-* **Next Steps** Maybe sending a vertex array to pack the draw instructions instead of sending each one separately.
+* **Next Steps** Maybe using a VertexBuffer to pack the draw instructions instead of sending each one separately.
+
+### Version 4: Refactored rendering to use a single VertexBuffer draw call
+![Benchmark 4 CPU Hotspots](https://github.com/user-attachments/assets/97ed4690-d0f5-4bfc-a96c-cf83c0523f23)
+
+* **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
+* **Performance:** 4400 FPS
+* **Notes** Refactored the drawing to use 1 window.draw(ParticleEngine.vertexBuffer, renderStates), instead of drawing every circle in a for loop 1 by 1.
+* **Next Steps** I'm pretty happy with the performance now, maybe small optimizations and refactoring the code to be more clean.
