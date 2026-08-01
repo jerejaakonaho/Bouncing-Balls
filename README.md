@@ -1,6 +1,7 @@
 # Particle Simulation
 A simulation, that has balls bouncing around, colliding with each other and walls. The goal of the project is to make it as optimized as possible.
-![Particle Simulation Engine](https://github.com/user-attachments/assets/0513af66-2a3d-4d95-abfd-1ab2404dd5d9)
+<img width="300" height="300" alt="particlesimdemo" src="https://github.com/user-attachments/assets/56da33e8-456a-4456-ae87-2c9c7180209e" />
+
 
 
 # Tech stack:
