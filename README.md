@@ -1,8 +1,7 @@
 # Particle Simulation
 A simulation, that has balls bouncing around, colliding with each other and walls. The goal of the project is to make it as optimized as possible.
-<img width="300" height="300" alt="particlesimdemo" src="https://github.com/user-attachments/assets/56da33e8-456a-4456-ae87-2c9c7180209e" />
 
-
+<img width="100%" alt="particlesimdemo" src="https://github.com/user-attachments/assets/56da33e8-456a-4456-ae87-2c9c7180209e" />
 
 # Tech stack:
 - SFML 3.1.0
