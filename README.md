@@ -1,5 +1,6 @@
 # Particle Simulation
-A simulation, that has balls bouncing around, colliding with each other and walls. The goal of the project is to make it as optimized as possible.
+[![My Skills](https://skillicons.dev/icons?i=cpp,cmake)](https://skillicons.dev)
+A fast C++ particle simulation, that has particles with collision physics. The program has been optimized by using contiguous data structures for cache friendliness, removing needless collision checks with particles that are far away, optimizing the rendering to use 1 draw command instead of drawing each particle separately. Also made the code as clean as possible, utilizing the PIMPL idiom. 
 
 <img width="50%" alt="particlesimdemo" src="https://github.com/user-attachments/assets/56da33e8-456a-4456-ae87-2c9c7180209e" />
 
@@ -43,3 +44,8 @@ A simulation, that has balls bouncing around, colliding with each other and wall
 * **Performance:** 4400 FPS
 * **Notes** Refactored the drawing to use 1 window.draw(ParticleEngine.vertexBuffer, renderStates), instead of drawing every circle in a for loop 1 by 1.
 * **Next Steps** I'm pretty happy with the performance now, maybe small optimizations and refactoring the code to be more clean.
+
+### Version 5: Cleanup & Refactoring
+
+* **Notes** Refactored the single ParticleEngine.hpp to be an interface, and hiding away the messy logic in the .cpp file. Also delegated things from main that shouldn't be there to the class itself.
+* **Next Steps** I'm pretty happy with the project now, and I learned a lot of stuff, applying new stuff I learned along the way. Maybe in the future I will make the collision checking multi threaded, but we'll cross that bridge when we get there :D 
