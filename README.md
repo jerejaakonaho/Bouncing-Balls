@@ -1,5 +1,6 @@
 # Particle Simulation
 [![My Skills](https://skillicons.dev/icons?i=cpp,cmake)](https://skillicons.dev)
+
 A fast C++ particle simulation, that has particles with collision physics. The program has been optimized by using contiguous data structures for cache friendliness, removing needless collision checks with particles that are far away, optimizing the rendering to use 1 draw command instead of drawing each particle separately. Also made the code as clean as possible, utilizing the PIMPL idiom. 
 
 <img width="50%" alt="particlesimdemo" src="https://github.com/user-attachments/assets/56da33e8-456a-4456-ae87-2c9c7180209e" />
