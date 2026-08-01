@@ -13,6 +13,13 @@ public:
     ParticleEngine(int windowHeight, int windowWidth);
     ~ParticleEngine();
 
+    // Copy & Copy assignment constructors deleted (because of unique_ptr)
+    ParticleEngine(const ParticleEngine & copy) = delete;
+    ParticleEngine& operator=(const ParticleEngine &copy) = delete;
+
+    ParticleEngine(ParticleEngine && move) noexcept;
+    ParticleEngine& operator=(ParticleEngine && move) noexcept;
+
     // Handles moving, collisions and syncing graphics
     void CircleLoop(int windowHeight, int windowWidth, float dt);
 

@@ -29,7 +29,7 @@ int main() {
 		frameCount++;
 		if (fpsClock.getElapsedTime().asSeconds() >= 1.0f) {
 		    float fps  = frameCount / fpsClock.restart().asSeconds();
-			window.setTitle("Bouncing Balls FPS: " + std::to_string(static_cast<int>(fps)));
+			window.setTitle("Particle Simulation, FPS: " + std::to_string(static_cast<int>(fps)));
 			frameCount = 0;
 		}
 		window.display();

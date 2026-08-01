@@ -16,8 +16,8 @@
 
 struct ParticleEngine::Impl {
     // Performance affecting parameters
-    const int particleCount{5000};
-    const float radius{5.f};
+    const int particleCount{1000};
+    const float radius{3.f};
     const float speed{300.f};
     sf::Color color{sf::Color::White};
     // GPU Vectors
@@ -44,7 +44,7 @@ struct ParticleEngine::Impl {
     bool initTexture(const std::filesystem::path &fileName, sf::Texture &circleTexture) {
         return circleTexture.loadFromFile(fileName);
     }
-    void initializeCircles(uint windowHeight, uint windowWidth, const sf::Texture& texture) {
+    void initializeCircles(int windowHeight, int windowWidth, const sf::Texture& texture) {
         posX.resize(particleCount);
         posY.resize(particleCount);
         dirX.resize(particleCount);
@@ -215,7 +215,7 @@ struct ParticleEngine::Impl {
 
     }
 
-    void handleWallCollisions(uint windowHeight, uint windowWidth) {
+    void handleWallCollisions(int windowHeight, int windowWidth) {
         for (size_t i{}; i < particleCount; i++) {
              // X axis, if out of bounds return to bounds and reverse direction.
              if (posX[i] - radius < 0.f) {
@@ -279,6 +279,12 @@ ParticleEngine::ParticleEngine(int windowHeight, int windowWidth)
     pImpl->initializeCircles(windowHeight, windowWidth, pImpl->circleTexture);
 }
 
+ParticleEngine::~ParticleEngine() = default;
+
+ParticleEngine::ParticleEngine(ParticleEngine&& move) noexcept = default;
+
+ParticleEngine& ParticleEngine::operator=(ParticleEngine&& move) noexcept = default;
+
 void ParticleEngine::CircleLoop(int windowHeight, int windowWidth, float dt) {
     pImpl->CircleLoop(windowHeight, windowWidth, dt);
 }
@@ -286,5 +292,3 @@ void ParticleEngine::CircleLoop(int windowHeight, int windowWidth, float dt) {
 void ParticleEngine::drawParticles(sf::RenderWindow &window) {
     pImpl->drawParticles(window);
 }
-
-ParticleEngine::~ParticleEngine() = default;
