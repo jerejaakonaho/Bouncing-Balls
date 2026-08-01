@@ -1,6 +1,6 @@
 # Bouncing Balls Simulation
 A simulation, that has balls bouncing around, colliding with each other and walls. The goal of the project is to make it as optimized as possible.
-![Particle Simulation Demo](https://github.com/user-attachments/assets/42c65bb4-0c72-4c4c-a62b-fdd507488356)
+https://github.com/user-attachments/assets/42c65bb4-0c72-4c4c-a62b-fdd507488356
 
 
 # Tech stack:
