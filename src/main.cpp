@@ -1,31 +1,17 @@
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <iostream>
 #include <SFML/Graphics.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
 #include "ParticleEngine.hpp"
 
 int main() {
     unsigned int windowHeight{1000};
     unsigned int windowWidth{1000};
-    ParticleEngine ParticleEngine;
-    sf::Texture circleTexture;
 
-    if (!ParticleEngine.initTexture("assets/circle.png", circleTexture)) {
-        std::cerr << "Failed to load texture" << std::endl;
-        return -1;
-    }
-
-    ParticleEngine.initializeCircles(windowHeight, windowWidth, circleTexture);
-
-    sf::RenderStates renderStates;
-    renderStates.texture = &circleTexture;
-
-	sf::RenderWindow window( sf::VideoMode( { windowHeight, windowWidth } ), "Bouncing Balls" );
-	window.setFramerateLimit(10000);
+	sf::RenderWindow window( sf::VideoMode( { windowHeight, windowWidth } ), "Particle Simulation" );
 
 	sf::Clock fpsClock;
-	int frameCount{};
+	int frameCount{0};
 	sf::Clock dtClock;
+
+	ParticleEngine particleEngine(windowHeight, windowWidth);
 
 	while ( window.isOpen() )
 	{
@@ -37,11 +23,9 @@ int main() {
 				window.close();
 		}
 
-		ParticleEngine.CircleLoop(windowHeight, windowWidth, dt);
-
 		window.clear();
-		window.draw(ParticleEngine.vertexBuffer, renderStates);
-
+		particleEngine.CircleLoop(windowHeight, windowWidth, dt);;
+		particleEngine.drawParticles(window);
 		frameCount++;
 		if (fpsClock.getElapsedTime().asSeconds() >= 1.0f) {
 		    float fps  = frameCount / fpsClock.restart().asSeconds();
