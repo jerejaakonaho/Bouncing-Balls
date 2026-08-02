@@ -16,8 +16,8 @@
 
 struct ParticleEngine::Impl {
     // Performance affecting parameters
-    const int particleCount{1000};
-    const float radius{3.f};
+    const int particleCount{5000};
+    const float radius{5.f};
     const float speed{300.f};
     sf::Color color{sf::Color::White};
     // GPU Vectors
@@ -125,7 +125,7 @@ struct ParticleEngine::Impl {
         // -1 means there is no particle
         std::fill(gridHeads.begin(), gridHeads.end(), -1);
 
-        for (size_t i{}; i < circleAmount; ++i) {
+        for (size_t i{}; i < particleCount; ++i) {
             int cellIndex = getCellIndex(posX[i], posY[i]);
             // Point this particles next to whatever was at the head
             nextParticle[i] = gridHeads[cellIndex];
@@ -134,11 +134,9 @@ struct ParticleEngine::Impl {
     }
 
     // COLLISION AND MOVEMENT
-    void moveCircles(float dt) {
-        for (size_t i{}; i < particleCount; i++) {
-            posX[i] += dirX[i] * dt;
-            posY[i] += dirY[i] * dt;
-        }
+    void moveCircle(float dt, size_t i) {
+        posX[i] += dirX[i] * dt;
+        posY[i] += dirY[i] * dt;
     }
 
     inline void handleParticleCollision(int i, int j, float radiusSum, float radiusSumSquared) {
@@ -215,25 +213,22 @@ struct ParticleEngine::Impl {
 
     }
 
-    void handleWallCollisions(int windowHeight, int windowWidth) {
-        for (size_t i{}; i < particleCount; i++) {
-             // X axis, if out of bounds return to bounds and reverse direction.
-             if (posX[i] - radius < 0.f) {
-                 posX[i] = radius;
-                 dirX[i] *= -1.f;
-             } else if (posX[i] + radius > windowWidth) {
-                 posX[i] = windowWidth - radius;
-                 dirX[i] *= -1.f;
-             }
+    void handleWallCollision(int windowHeight, int windowWidth, size_t i) {
+        if (posX[i] - radius < 0.f) {
+            posX[i] = radius;
+            dirX[i] *= -1.f;
+        } else if (posX[i] + radius > windowWidth) {
+            posX[i] = windowWidth - radius;
+            dirX[i] *= -1.f;
+        }
 
-             // Y axis:
-             if (posY[i] - radius < 0.f) {
-                 posY[i] = radius;
-                 dirY[i] *= -1.f;
-             } else if (posY[i] + radius > windowHeight) {
-                 posY[i] = windowHeight - radius;
-                 dirY[i] *= -1.f;
-             }
+        // Y axis:
+        if (posY[i] - radius < 0.f) {
+            posY[i] = radius;
+            dirY[i] *= -1.f;
+        } else if (posY[i] + radius > windowHeight) {
+            posY[i] = windowHeight - radius;
+            dirY[i] *= -1.f;
         }
     }
 
@@ -263,13 +258,15 @@ struct ParticleEngine::Impl {
     }
 
     void CircleLoop(int windowHeight, int windowWidth, float dt) {
-        moveCircles(dt);
-        handleWallCollisions(windowHeight, windowWidth);
+        // Simplify CircleLoop (reduce needless particle getting from the spatial grid to improve cache locality)
+        for (size_t i{}; i < particleCount; i++) {
+            moveCircle(dt, i);
+            handleWallCollision(windowHeight, windowWidth, i);
+        }
         buildGrid(particleCount);
         handleCollisionsWithSpatialGrid();
         syncGraphics();
     }
-
 };
 
 ParticleEngine::ParticleEngine(int windowHeight, int windowWidth)
@@ -286,8 +283,9 @@ ParticleEngine::ParticleEngine(ParticleEngine&& move) noexcept = default;
 ParticleEngine& ParticleEngine::operator=(ParticleEngine&& move) noexcept = default;
 
 void ParticleEngine::CircleLoop(int windowHeight, int windowWidth, float dt) {
-    pImpl->CircleLoop(windowHeight, windowWidth, dt);
+    pImpl->optimizedCircleLoop(windowHeight, windowWidth, dt);
 }
+
 
 void ParticleEngine::drawParticles(sf::RenderWindow &window) {
     pImpl->drawParticles(window);
