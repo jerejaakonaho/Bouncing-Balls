@@ -48,5 +48,10 @@ A fast C++ particle simulation, that has particles with collision physics. The p
 
 ### Version 5: Cleanup & Refactoring
 
-* **Notes** Refactored the single ParticleEngine.hpp to be an interface, and hiding away the messy logic in the .cpp file. Also delegated things from main that shouldn't be there to the class itself.
-* **Next Steps** I'm pretty happy with the project now, and I learned a lot of stuff, applying new stuff I learned along the way. Maybe in the future I will make the collision checking multi threaded, but we'll cross that bridge when we get there :D 
+* **Notes** Refactored the single `ParticleEngine.hpp` to be an interface, and hiding away the messy logic in the .cpp file. Also delegated things from main that shouldn't be there to the class itself.
+* **Next Steps** I'm pretty happy with the project now, and I learned a lot of new things about benchmarking, performance optimization and writing cleaner and more portable code. Small optimizations still remain, or maybe a crazy multithreaded version for the collision checking...
+
+### Version 5: Cleanup & Refactoring
+* **Parameters:** `circleAmount = 5000`, `radius = 5.f`, `speed = 300.f`
+* **Notes** Small optimization to `CircleLoop()` by doing moving and wall collisions in a cingle for loop instead of 2, removing 1 cache fetch.
+* **Next Steps** Maybe can do something similar with `buildGrid()` and `handleCollisionsWwithSpatialGrid()` aswell.
